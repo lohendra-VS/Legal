@@ -91,8 +91,8 @@ export default function App() {
         ? JSON.parse(saved)
         : {
             advocateName: "Vivek",
-            qualifications: "B.Sc., B.L.",
-            advocatePhone: "",
+            qualifications: "M.Sc., B.L.",
+            advocatePhone: "9894191077",
             barCouncilNo: "MS/Musiri/Bar",
             chamberAddress: "Chamber #4, Combined Court Complex, Musiri",
             enableT1Daemon: true,
@@ -101,8 +101,8 @@ export default function App() {
     } catch {
       return {
         advocateName: "Vivek",
-        qualifications: "B.Sc., B.L.",
-        advocatePhone: "",
+        qualifications: "M.Sc., B.L.",
+        advocatePhone: "9894191077",
         barCouncilNo: "MS/Musiri/Bar",
         chamberAddress: "Chamber #4, Combined Court Complex, Musiri",
         enableT1Daemon: true,
@@ -187,7 +187,7 @@ export default function App() {
       showToast("No hearings scheduled to export.");
       return;
     }
-    let text = `*CHAMBERS OF ADV. VIVEK, B.Sc., B.L.*\n*Cause List Digest*\n----------------------------\n`;
+    let text = `*CHAMBERS OF ADV. VIVEK, M.Sc., B.L.*\n*Cause List Digest*\n----------------------------\n`;
     list.forEach((h, idx) => {
       text += `\n${idx + 1}. *${h.caseNo}* (${h.court})\n   Stage: ${h.stage}\n   Date: ${h.hearingDate}\n   Hall/Item: ${h.courtHall || "N/A"}\n`;
     });
