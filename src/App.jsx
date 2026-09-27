@@ -15,6 +15,7 @@ import {
   Trash2,
   Share2,
   ChevronRight,
+  ChevronLeft,
   Smartphone,
   Volume2,
   X,
@@ -25,8 +26,9 @@ import {
   CalendarDays,
   Copy,
   ArrowUpRight,
-  RefreshCw,
-  UploadCloud
+  UploadCloud,
+  Landmark,
+  ShieldCheck
 } from "lucide-react";
 
 const MUSIRI_COURTS = [
@@ -52,6 +54,7 @@ const CASE_STAGES = [
 ];
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState("portfolio");
 
   const [cases, setCases] = useState(() => {
@@ -117,11 +120,19 @@ export default function App() {
   const [selectedDocPreview, setSelectedDocPreview] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Splash Screen Timer & Initial Bell Chime
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2400);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem("vivek_musiri_cases", JSON.stringify(cases));
     } catch (e) {
-      showToast("Storage full! Archive or remove old files.");
+      showToast("Storage full! Remove older files.");
     }
   }, [cases]);
 
@@ -135,7 +146,7 @@ export default function App() {
     try {
       localStorage.setItem("vivek_musiri_docs", JSON.stringify(documents));
     } catch (e) {
-      showToast("Image storage limit reached! Delete older scans.");
+      showToast("Document storage full! Delete older scans.");
     }
   }, [documents]);
 
@@ -158,12 +169,12 @@ export default function App() {
       const gain = audioCtx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.8);
+      osc.stop(audioCtx.currentTime + 1.2);
     } catch {}
   };
 
@@ -186,7 +197,57 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans pb-20 md:pb-6">
+    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans pb-20 md:pb-6 relative selection:bg-amber-100">
+      
+      {/* OPENING COURT SPLASH ANIMATION */}
+      {showSplash && (
+        <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white transition-opacity duration-700 animate-fadeIn">
+          {/* Subtle Ambient Courthouse Background Silhouette */}
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-600 via-slate-900 to-black pointer-events-none" />
+
+          {/* Animated Crest */}
+          <div className="relative mb-6">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-amber-900 via-amber-700 to-amber-500 p-0.5 shadow-2xl shadow-amber-600/30 animate-pulse">
+              <div className="w-full h-full bg-slate-950 rounded-3xl flex flex-col items-center justify-center border border-amber-400/40">
+                <Landmark className="w-10 h-10 text-amber-400 mb-1" />
+                <Scale className="w-5 h-5 text-amber-300" />
+              </div>
+            </div>
+            <div className="absolute -inset-2 bg-amber-500/20 blur-xl -z-10 rounded-full" />
+          </div>
+
+          {/* Advocate Chambers Typography */}
+          <div className="space-y-1 z-10">
+            <p className="text-[11px] font-mono tracking-widest text-amber-400 uppercase font-semibold">
+              Law Chambers of
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-wide">
+              ADVOCATE VIVEK
+            </h1>
+            <p className="text-xs font-mono font-medium text-slate-300">
+              B.Sc., B.L. • Musiri Bar Association
+            </p>
+            <p className="text-[11px] text-amber-200/80 pt-1 font-serif italic">
+              Sub Court • District Munsif & Judicial Magistrate Courts
+            </p>
+          </div>
+
+          {/* Loading Bar & Enter Button */}
+          <div className="mt-8 w-48 sm:w-56 space-y-3 z-10">
+            <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-amber-600 to-amber-300 rounded-full animate-[progress_2s_ease-in-out]" />
+            </div>
+            <button
+              onClick={() => setShowSplash(false)}
+              className="text-[11px] text-slate-400 hover:text-amber-300 font-semibold tracking-wider uppercase transition flex items-center justify-center gap-1 mx-auto"
+            >
+              <span>Enter Chambers</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed top-3 left-3 right-3 sm:left-auto sm:right-5 z-50 bg-slate-900 text-amber-100 px-4 py-3 rounded-xl shadow-xl flex items-center justify-between text-xs sm:text-sm">
@@ -236,7 +297,7 @@ export default function App() {
         <div className="hidden md:flex max-w-6xl mx-auto px-4 border-t border-slate-100 space-x-6 text-xs font-semibold">
           {[
             { id: "portfolio", label: `Dockets (${cases.length})`, icon: Briefcase },
-            { id: "diary", label: `Hearing Diary (${hearings.length})`, icon: CalendarDays },
+            { id: "diary", label: `Hearing Diary & Calendar (${hearings.length})`, icon: CalendarDays },
             { id: "scanner", label: "A4 Scanner & Cam", icon: Camera },
             { id: "vault", label: `Document Vault (${documents.length})`, icon: FolderOpen },
             { id: "reminders", label: "Advocate Settings", icon: Bell }
@@ -261,7 +322,6 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 w-full flex-1">
         {activeTab === "portfolio" && (
           <div className="space-y-4">
-            {/* Search Ribbon */}
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
@@ -287,7 +347,6 @@ export default function App() {
               </select>
             </div>
 
-            {/* Cases List Grid */}
             {cases.length === 0 ? (
               <div className="bg-white border border-dashed border-slate-300 rounded-xl p-8 text-center mt-4">
                 <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-2" />
@@ -357,78 +416,21 @@ export default function App() {
           </div>
         )}
 
+        {/* DIARY VIEW WITH COURT CALENDAR */}
         {activeTab === "diary" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-              <div>
-                <h2 className="font-serif font-bold text-sm sm:text-base text-slate-900">Musiri Court Hearing Diary</h2>
-                <p className="text-[11px] text-slate-500">Upcoming listings & tomorrow's cause list.</p>
-              </div>
-              <button
-                onClick={() => {
-                  setSelectedCaseForAction(cases[0] || null);
-                  setIsHearingModalOpen(true);
-                }}
-                disabled={cases.length === 0}
-                className="bg-slate-950 disabled:opacity-40 text-white text-xs px-3 py-2 rounded-lg font-semibold flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5 text-amber-400" />
-                <span>Log Date</span>
-              </button>
-            </div>
-
-            {hearings.length === 0 ? (
-              <div className="bg-white border border-dashed border-slate-300 rounded-xl p-8 text-center">
-                <CalendarDays className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-xs text-slate-500">No court appearances scheduled in the diary.</p>
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {hearings
-                  .sort((a, b) => new Date(a.hearingDate) - new Date(b.hearingDate))
-                  .map((h) => {
-                    const isTomorrow = h.hearingDate === tomorrowISO;
-                    return (
-                      <div
-                        key={h.id}
-                        className={`bg-white border rounded-xl p-3.5 flex flex-col sm:flex-row justify-between sm:items-center gap-2 shadow-2xs ${
-                          isTomorrow ? "border-amber-400 bg-amber-50/40 ring-1 ring-amber-300" : "border-slate-200"
-                        }`}
-                      >
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800">
-                              {h.hearingDate}
-                            </span>
-                            {isTomorrow && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900 animate-pulse">
-                                Listed Tomorrow (T-1)
-                              </span>
-                            )}
-                            <span className="text-xs text-slate-500">{h.courtHall}</span>
-                          </div>
-                          <h4 className="font-serif font-bold text-sm text-slate-900 mt-1">{h.caseNo}</h4>
-                          <p className="text-xs text-slate-600">Stage: <strong>{h.stage}</strong></p>
-                          {h.notes && <p className="text-[11px] text-amber-900 italic mt-0.5">Prep: {h.notes}</p>}
-                        </div>
-
-                        <div className="flex items-center justify-end">
-                          <button
-                            onClick={() => setHearings(hearings.filter((item) => item.id !== h.id))}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
-          </div>
+          <HearingDiaryWithCalendar
+            hearings={hearings}
+            cases={cases}
+            tomorrowISO={tomorrowISO}
+            onOpenHearingModal={() => {
+              setSelectedCaseForAction(cases[0] || null);
+              setIsHearingModalOpen(true);
+            }}
+            onDeleteHearing={(id) => setHearings(hearings.filter((h) => h.id !== id))}
+          />
         )}
 
-        {/* SCANNER VIEW - RESPONSIVE FOR MOBILE AND DESKTOP */}
+        {/* SCANNER VIEW */}
         {activeTab === "scanner" && (
           <DocumentScannerComponent
             cases={cases}
@@ -498,7 +500,7 @@ export default function App() {
           </div>
         )}
 
-        {/* SETTINGS / REMINDERS VIEW */}
+        {/* SETTINGS VIEW */}
         {activeTab === "reminders" && (
           <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 max-w-xl mx-auto space-y-4">
             <h2 className="font-serif font-bold text-base text-slate-900 border-b pb-2">Advocate Chamber Settings</h2>
@@ -743,7 +745,283 @@ export default function App() {
   );
 }
 
-// OPTIMIZED SCANNER COMPONENT (Supports Direct Mobile Camera, Compression & Storage Protection)
+// CALENDAR & HEARING DIARY COMBINED COMPONENT
+function HearingDiaryWithCalendar({
+  hearings,
+  cases,
+  tomorrowISO,
+  onOpenHearingModal,
+  onDeleteHearing
+}) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const prevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  };
+
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const hearingCountMap = {};
+  hearings.forEach((h) => {
+    if (h.hearingDate) {
+      hearingCountMap[h.hearingDate] = (hearingCountMap[h.hearingDate] || 0) + 1;
+    }
+  });
+
+  const days = [];
+  for (let i = 0; i < firstDay; i++) {
+    days.push(null);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    days.push({ dayNumber: d, dateISO: dStr, count: hearingCountMap[dStr] || 0 });
+  }
+
+  const displayedHearings = selectedDate
+    ? hearings.filter((h) => h.hearingDate === selectedDate)
+    : [...hearings].sort((a, b) => new Date(a.hearingDate) - new Date(b.hearingDate));
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+        <div>
+          <h2 className="font-serif font-bold text-sm sm:text-base text-slate-900">
+            Advocate Vivek's Hearing Diary & Court Calendar
+          </h2>
+          <p className="text-[11px] text-slate-500">
+            Interactive cause list with listing counters per date.
+          </p>
+        </div>
+        <button
+          onClick={onOpenHearingModal}
+          disabled={cases.length === 0}
+          className="bg-slate-950 disabled:opacity-40 text-white text-xs px-3 py-2 rounded-lg font-semibold flex items-center gap-1 shadow-2xs"
+        >
+          <Plus className="w-3.5 h-3.5 text-amber-400" />
+          <span>Log Date</span>
+        </button>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-2xs">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-amber-700" />
+            <h3 className="font-serif font-bold text-sm sm:text-base text-slate-900">
+              {monthNames[month]} {year}
+            </h3>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={prevMonth}
+              className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-700"
+              title="Previous Month"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setCurrentDate(new Date());
+                setSelectedDate(todayStr);
+              }}
+              className="text-[11px] font-semibold px-2.5 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-700"
+            >
+              Today
+            </button>
+            <button
+              onClick={nextMonth}
+              className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-700"
+              title="Next Month"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 text-center text-[11px] font-bold text-slate-400 mb-2 uppercase">
+          <span className="text-rose-500">Sun</span>
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+        </div>
+
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
+          {days.map((item, idx) => {
+            if (!item) {
+              return <div key={`empty-${idx}`} className="min-h-[50px] sm:min-h-[64px] bg-slate-50/50 rounded-lg" />;
+            }
+
+            const isToday = item.dateISO === todayStr;
+            const isTomorrow = item.dateISO === tomorrowISO;
+            const isSelected = item.dateISO === selectedDate;
+            const hasHearings = item.count > 0;
+
+            return (
+              <div
+                key={item.dateISO}
+                onClick={() => setSelectedDate(isSelected ? null : item.dateISO)}
+                className={`min-h-[50px] sm:min-h-[64px] p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between cursor-pointer transition relative ${
+                  isSelected
+                    ? "border-amber-600 bg-amber-50/70 ring-2 ring-amber-500/20"
+                    : isToday
+                    ? "border-slate-800 bg-slate-50 font-bold"
+                    : isTomorrow
+                    ? "border-amber-400 bg-amber-50/30"
+                    : hasHearings
+                    ? "border-amber-200 bg-amber-50/20 hover:border-amber-400"
+                    : "border-slate-100 hover:border-slate-300 bg-white"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`text-xs font-semibold ${
+                      isToday
+                        ? "bg-slate-950 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold"
+                        : "text-slate-800"
+                    }`}
+                  >
+                    {item.dayNumber}
+                  </span>
+
+                  {isTomorrow && (
+                    <span className="text-[9px] bg-amber-500 text-white px-1 rounded font-bold uppercase hidden sm:inline">
+                      T-1
+                    </span>
+                  )}
+                </div>
+
+                {hasHearings ? (
+                  <div className="mt-1 flex items-center justify-end">
+                    <span
+                      className={`text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-2xs ${
+                        isTomorrow
+                          ? "bg-amber-600 text-white animate-pulse"
+                          : "bg-amber-100 text-amber-900 border border-amber-300"
+                      }`}
+                    >
+                      <span className="text-[9px] font-normal hidden sm:inline">Listings:</span>
+                      {item.count}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-slate-300 self-end">—</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-900" /> Today
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" /> Tomorrow (T-1)
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-md bg-amber-100 border border-amber-300" /> Hearings Listed
+            </span>
+          </div>
+
+          {selectedDate && (
+            <button
+              onClick={() => setSelectedDate(null)}
+              className="text-amber-800 font-bold hover:underline"
+            >
+              Clear Filter (Show All)
+            </button>
+          )}
+        </div>
+      </div>
+
+      {selectedDate && (
+        <div className="bg-amber-100/70 border border-amber-300 p-3 rounded-xl flex items-center justify-between text-xs text-amber-950">
+          <span>
+            Displaying appearances for: <strong>{selectedDate}</strong> ({displayedHearings.length} matter(s))
+          </span>
+          <button
+            onClick={() => setSelectedDate(null)}
+            className="text-[11px] font-bold text-amber-900 underline"
+          >
+            Show All Dates
+          </button>
+        </div>
+      )}
+
+      {displayedHearings.length === 0 ? (
+        <div className="bg-white border border-dashed border-slate-300 rounded-xl p-8 text-center">
+          <CalendarDays className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-xs text-slate-500">
+            {selectedDate
+              ? `No hearings scheduled on ${selectedDate}.`
+              : "No court appearances scheduled in the diary."}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {displayedHearings.map((h) => {
+            const isTomorrow = h.hearingDate === tomorrowISO;
+            return (
+              <div
+                key={h.id}
+                className={`bg-white border rounded-xl p-3.5 flex flex-col sm:flex-row justify-between sm:items-center gap-2 shadow-2xs ${
+                  isTomorrow ? "border-amber-400 bg-amber-50/40 ring-1 ring-amber-300" : "border-slate-200"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800">
+                      {h.hearingDate}
+                    </span>
+                    {isTomorrow && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900 animate-pulse">
+                        Listed Tomorrow (T-1)
+                      </span>
+                    )}
+                    <span className="text-xs text-slate-500">{h.courtHall}</span>
+                  </div>
+                  <h4 className="font-serif font-bold text-sm text-slate-900 mt-1">{h.caseNo}</h4>
+                  <p className="text-xs text-slate-600">Stage: <strong>{h.stage}</strong></p>
+                  {h.notes && <p className="text-[11px] text-amber-900 italic mt-0.5">Prep: {h.notes}</p>}
+                </div>
+
+                <div className="flex items-center justify-end">
+                  <button
+                    onClick={() => onDeleteHearing(h.id)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded"
+                    title="Remove Entry"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// DOCUMENT SCANNER COMPONENT
 function DocumentScannerComponent({ cases, onSave }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -771,7 +1049,7 @@ function DocumentScannerComponent({ cases, onSave }) {
         setIsStreaming(true);
       }
     } catch (err) {
-      alert("Direct camera access blocked. Please use the 'Take Photo' or 'Upload File' button below.");
+      alert("Direct camera access blocked. Please use the 'Camera Photo' or 'Upload File' button below.");
     }
   };
 
@@ -802,7 +1080,6 @@ function DocumentScannerComponent({ cases, onSave }) {
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        // Compress & scale to prevent localStorage crashes
         const canvas = document.createElement("canvas");
         const MAX_WIDTH = 900;
         let width = img.width;
@@ -830,7 +1107,6 @@ function DocumentScannerComponent({ cases, onSave }) {
   const handleSaveToVault = () => {
     if (!capturedImage || !title.trim()) return;
 
-    // Burn rotation and filter permanently into output image before saving
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
@@ -873,7 +1149,6 @@ function DocumentScannerComponent({ cases, onSave }) {
         <p className="text-[11px] text-slate-500">Take a photo or upload Vakalatnamas, plaints, or summons.</p>
       </div>
 
-      {/* Viewfinder / Image Display Container */}
       <div className="relative aspect-[3/4] max-h-[380px] sm:max-h-[460px] bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-slate-300">
         {isStreaming ? (
           <video ref={videoRef} playsInline muted autoPlay className="w-full h-full object-cover" />
@@ -901,9 +1176,7 @@ function DocumentScannerComponent({ cases, onSave }) {
         )}
       </div>
 
-      {/* Action Trigger Buttons */}
       <div className="flex flex-wrap gap-2">
-        {/* Native mobile camera trigger */}
         <label className="flex-1 min-w-[130px] bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
           <Camera className="w-4 h-4" />
           <span>Camera Photo</span>
@@ -916,7 +1189,6 @@ function DocumentScannerComponent({ cases, onSave }) {
           />
         </label>
 
-        {/* Regular file picker */}
         <label className="flex-1 min-w-[130px] bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer border border-slate-300">
           <UploadCloud className="w-4 h-4" />
           <span>Upload File</span>
@@ -928,7 +1200,6 @@ function DocumentScannerComponent({ cases, onSave }) {
           />
         </label>
 
-        {/* Live WebCam stream toggle */}
         {!isStreaming ? (
           <button
             onClick={startLiveCamera}
@@ -946,7 +1217,6 @@ function DocumentScannerComponent({ cases, onSave }) {
         )}
       </div>
 
-      {/* Editing & Saving Section */}
       {capturedImage && (
         <div className="pt-3 border-t border-slate-200 space-y-3 text-xs">
           <div className="flex items-center justify-between gap-2">
